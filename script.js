@@ -1,175 +1,238 @@
-/*calling grid & score*/
 const grid = document.getElementById("grid");
 const scoreDisplay = document.getElementById("score");
+const restartBtn = document.getElementById("restart-btn");
 
 let board = [];
 let score = 0;
 
-function startGame() {
-  board = [
-    [0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0]
-  ];
+function createBoard() {
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ];
 
-  score = 0;
-  scoreDisplay.innerText = score;
+    score = 0;
+    updateScore();
 
-  addNumber();
-  addNumber();
-  drawBoard();
+    addRandomTile();
+    addRandomTile();
+
+    drawBoard();
 }
 
 function drawBoard() {
-  grid.innerHTML = "";
+    grid.innerHTML = "";
 
-  for(let row=0; row<4; row++) {
-    for(let col=0; col<4; col++) {
+    board.forEach(row => {
+        row.forEach(cell => {
+            const tile = document.createElement("div");
+            tile.classList.add("cell");
 
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
+            if (cell !== 0) {
+                tile.textContent = cell;
+                tile.style.background = getTileColor(cell);
+            }
 
-      if(board[row][col] !== 0){
-        cell.innerText = board[row][col];
-        cell.classList.add(`tile-${board[row][col]}`);
-      }
-
-      grid.appendChild(cell);
-    }
-  }
+            grid.appendChild(tile);
+        });
+    });
 }
 
-function addNumber() {
-  let emptyCells = [];
+function getTileColor(value) {
+    const colors = {
+        2: "#eee4da",
+        4: "#ede0c8",
+        8: "#f2b179",
+        16: "#f59563",
+        32: "#f67c5f",
+        64: "#f65e3b",
+        128: "#edcf72",
+        256: "#edcc61",
+        512: "#edc850",
+        1024: "#edc53f",
+        2048: "#edc22e"
+    };
 
-  for(let row=0; row<4; row++) {
-    for(let col=0; col<4; col++) {
-      if(board[row][col] === 0){
-        emptyCells.push({row, col});
-      }
+    return colors[value] || "#3c3a32";
+}
+
+function addRandomTile() {
+    let emptyCells = [];
+
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            if (board[r][c] === 0) {
+                emptyCells.push({ r, c });
+            }
+        }
     }
-  }
 
-  if(emptyCells.length === 0) return;
+    if (emptyCells.length === 0) return;
 
-  let randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    const randomCell =
+        emptyCells[Math.floor(Math.random() * emptyCells.length)];
 
-  board[randomCell.row][randomCell.col] = 2;
+    board[randomCell.r][randomCell.c] =
+        Math.random() < 0.9 ? 2 : 4;
+}
+
+function updateScore() {
+    scoreDisplay.textContent = score;
 }
 
 function slide(row) {
+    row = row.filter(val => val);
 
-  row = row.filter(num => num);
-
-  for(let i=0; i<row.length-1; i++) {
-
-    if(row[i] === row[i+1]) {
-      row[i] *= 2;
-      score += row[i];
-      row[i+1] = 0;
+    for (let i = 0; i < row.length - 1; i++) {
+        if (row[i] === row[i + 1]) {
+            row[i] *= 2;
+            score += row[i];
+            row[i + 1] = 0;
+        }
     }
-  }
 
-  row = row.filter(num => num);
+    row = row.filter(val => val);
 
-  while(row.length < 4){
-    row.push(0);
-  }
+    while (row.length < 4) {
+        row.push(0);
+    }
 
-  return row;
+    return row;
 }
 
 function moveLeft() {
+    let oldBoard = JSON.stringify(board);
 
-  for(let i=0; i<4; i++) {
-    board[i] = slide(board[i]);
-  }
+    for (let r = 0; r < 4; r++) {
+        board[r] = slide(board[r]);
+    }
+
+    afterMove(oldBoard);
 }
 
 function moveRight() {
+    let oldBoard = JSON.stringify(board);
 
-  for(let i=0; i<4; i++) {
-    board[i] = slide(board[i].reverse()).reverse();
-  }
+    for (let r = 0; r < 4; r++) {
+        board[r] = slide(board[r].reverse()).reverse();
+    }
+
+    afterMove(oldBoard);
 }
 
 function moveUp() {
+    let oldBoard = JSON.stringify(board);
 
-  for(let col=0; col<4; col++) {
+    for (let c = 0; c < 4; c++) {
+        let col = [];
 
-    let temp = [];
+        for (let r = 0; r < 4; r++) {
+            col.push(board[r][c]);
+        }
 
-    for(let row=0; row<4; row++) {
-      temp.push(board[row][col]);
+        col = slide(col);
+
+        for (let r = 0; r < 4; r++) {
+            board[r][c] = col[r];
+        }
     }
 
-    temp = slide(temp);
-
-    for(let row=0; row<4; row++) {
-      board[row][col] = temp[row];
-    }
-  }
+    afterMove(oldBoard);
 }
 
 function moveDown() {
+    let oldBoard = JSON.stringify(board);
 
-  for(let col=0; col<4; col++) {
+    for (let c = 0; c < 4; c++) {
+        let col = [];
 
-    let temp = [];
+        for (let r = 0; r < 4; r++) {
+            col.push(board[r][c]);
+        }
 
-    for(let row=0; row<4; row++) {
-      temp.push(board[row][col]);
+        col = slide(col.reverse()).reverse();
+
+        for (let r = 0; r < 4; r++) {
+            board[r][c] = col[r];
+        }
     }
 
-    temp = slide(temp.reverse()).reverse();
-
-    for(let row=0; row<4; row++) {
-      board[row][col] = temp[row];
-    }
-  }
+    afterMove(oldBoard);
 }
 
-document.addEventListener("keydown", (e) => {
+function afterMove(oldBoard) {
+    if (oldBoard !== JSON.stringify(board)) {
+        addRandomTile();
+        drawBoard();
+        updateScore();
+        checkGameOver();
+    }
+}
 
-  if(e.key === "ArrowLeft"){
-    moveLeft();
-  }
+function checkGameOver() {
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            if (board[r][c] === 0) return;
+        }
+    }
 
-  else if(e.key === "ArrowRight"){
-    moveRight();
-  }
+    alert("Game Over!");
+}
 
-  else if(e.key === "ArrowUp"){
-    moveUp();
-  }
+document.addEventListener("keydown", e => {
+    switch (e.key) {
+        case "ArrowLeft":
+            moveLeft();
+            break;
 
-  else if(e.key === "ArrowDown"){
-    moveDown();
-  }
+        case "ArrowRight":
+            moveRight();
+            break;
 
-  else{
-    return;
-  }
+        case "ArrowUp":
+            moveUp();
+            break;
 
-  addNumber();
-  drawBoard();
-
-  scoreDisplay.innerText = score;
-
-  checkWin();
+        case "ArrowDown":
+            moveDown();
+            break;
+    }
 });
 
-function checkWin(){
+/* MOBILE TOUCH CONTROLS */
 
-  for(let row=0; row<4; row++) {
-    for(let col=0; col<4; col++) {
+let startX = 0;
+let startY = 0;
 
-      if(board[row][col] === 2048){
-        alert("You Win!");
-      }
+document.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener("touchend", e => {
+    let endX = e.changedTouches[0].clientX;
+    let endY = e.changedTouches[0].clientY;
+
+    let dx = endX - startX;
+    let dy = endY - startY;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 50) {
+            moveRight();
+        } else if (dx < -50) {
+            moveLeft();
+        }
+    } else {
+        if (dy > 50) {
+            moveDown();
+        } else if (dy < -50) {
+            moveUp();
+        }
     }
-  }
-}
+});
 
-startGame();
+restartBtn.addEventListener("click", createBoard);
+
+createBoard();

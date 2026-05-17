@@ -1,23 +1,31 @@
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>2048 Game</title>
-    <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
-  <!--game main box-->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
     <div class="container">
-      <h1>2048</h1>
-  <!--score box-->
-      <div class="score-box">
-        Score: <span id="score">0</span>
-      </div>
-  <!--grid box-->
-      <div class="grid" id="grid"></div>
-  <!--restart button-->
-      <button onclick="startGame()">Restart</button>
+        <h1>2048</h1>
+
+        <div class="top-bar">
+            <div class="score-box">
+                Score: <span id="score">0</span>
+            </div>
+
+            <button id="restart-btn">Restart</button>
+        </div>
+
+        <div class="grid" id="grid"></div>
+
+        <p class="info">
+            Use Arrow Keys on Laptop or Swipe on Mobile
+        </p>
     </div>
-    
-  <!--script file-->
+
     <script src="script.js"></script>
-  </body>
+</body>
 </html>
